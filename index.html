@@ -9,6 +9,7 @@
   積立プランのマイページ操作を、お客様と一緒に練習するためのデモ（2026-10-30）。
   本物のサイトではない。入力した内容はどこにも送らない・保存しない。ロゴ・社名は入れない。
   画面の流れは公式ガイド IH144（請求通知）・IH146（自動支払い）・IH124（オンライン決済）・IH162（解約の確認）に合わせた。
+  2026-10-30 本物のマイページで、メニュー・支払人・カードの一覧・カード入力欄・請求通知の確認画面・請求概要の文言を確かめて直した（カード入力より先は公式ガイドのまま）。
   #A3 のように画面名を付けて開くと、その画面から始まる（動画の撮影にも使う）。
 -->
 <style>
@@ -106,6 +107,19 @@ h1{font-size:20px;font-weight:400;margin:0 0 2px}
 .login .inp{margin-bottom:12px;background:#eef0f5;border:0;padding:11px}
 a{color:var(--link)}
 .shoot .hint{display:none!important}
+tr.pay{cursor:pointer}tr.pay td{vertical-align:middle}
+.ckc{width:20px;height:20px;border:1.5px solid #bbb;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff}
+tr.pay.on .ckc{background:#777;border-color:#777}tr.pay.on .ckc::after{content:"✓";color:#fff;font-size:12px;font-weight:700}
+.hs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl.ct{min-width:820px;font-size:13px}.tbl.ct td{vertical-align:middle;padding:10px 6px}.tbl.ct tr{cursor:pointer}
+.tbl.ct td:nth-child(4),.tbl.ct th:nth-child(4){text-align:right;white-space:nowrap}.tbl.ct td:nth-child(5){white-space:nowrap}
+.tbl.ct td.info{font-size:12px;color:#555;min-width:330px}
+.tbl.ct .rd{display:inline-flex}.dot2{width:10px;height:10px;border-radius:50%;background:#555}
+.lg{display:inline-block;width:58px;height:33px;vertical-align:middle}.lg svg{width:100%;height:100%}
+.cardhead{display:flex;align-items:center;gap:12px;font-size:20px;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:10px}
+.inp.sel{background:#f7f7f7 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23999'/%3E%3C/svg%3E") no-repeat right 10px center/10px}
+.inote{border-left:4px solid #ddd;padding:6px 12px;font-size:12px;color:#555;margin:8px 0}
+.t1b{font-size:17px;color:var(--link)}
 </style>
 </head>
 <body>
@@ -155,19 +169,21 @@ function side(open, sel) {
   const big = (key, icon, label, subs, extra = '') => {
     const isOpen = open === key;
     let h = `<div class="m-item ${isOpen ? 'open' : ''}" id="m_${key}" onclick="menuOpen('${key}')">${svg(icon)}${label}${extra}${subs ? `<span class="arr">${isOpen ? '⌄' : '‹'}</span>` : ''}</div>`;
-    if (isOpen && subs) h += subs.map(([k, l, r]) => `<div class="m-sub ${sel === k ? 'sel' : ''}" id="s_${k}" onclick="go('${r}')">${l}</div>`).join('');
+    // 練習では作っていない画面（r が空）は、押すと案内だけ出す
+    if (isOpen && subs) h += subs.map(([k, l, r]) => `<div class="m-sub ${sel === k ? 'sel' : ''}" id="s_${k}" onclick="${r ? `go('${r}')` : 'noPage()'}">${l}</div>`).join('');
     return h;
   };
   return `<nav class="side ${S.menu ? 'open' : ''}" id="side">
     ${S.surrender ? `<div class="m-item" id="m_surr" onclick="go('D2')">${svg('mail')}解約の確認<span class="m-alert">!</span></div>` : ''}
-    ${big('gen', 'gen', '一般', [['ov', '概要', 'overview']])}
-    ${big('bill', 'bill', '請求', [['bsum', '概要', 'billsum'], ['online', 'オンライン決済', 'C1'], ['auto', '自動支払い', 'B1'], ['notice', '請求通知', 'A1'], ['wire', '電信送金情報', 'billsum'], ['check', '小切手指示', 'billsum']])}
+    ${big('gen', 'gen', '一般', [['ov', '概要', 'overview'], ['base', '基本プラン', '']])}
+    ${big('bill', 'bill', '請求', [['bsum', '概要', 'billsum'], ['online', 'オンライン決済', 'C1'], ['auto', '自動支払い', 'B1'], ['notice', '請求通知', 'A1'], ['wire', '電信送金情報', ''], ['check', '小切手指示', ''], ['src', '資金源', '']])}
     ${big('docs', 'doc', 'ドキュメントセンター')}
-    ${big('tools', 'tools', 'オンラインツール', [])}
-    ${big('rel', 'people', '続柄', [])}
+    ${big('tools', 'tools', 'オンラインツール', [['efa', 'Eファンドアナライザー', ''], ['perf', 'ファンドパフォーマンス＆推奨戦略', '']])}
+    ${big('rel', 'people', '続柄', [['rsum', '概要', ''], ['own', '所有者', ''], ['payr', '支払人', ''], ['ins', '被保険者', ''], ['ben', '受益者', '']])}
     ${big('lib', 'book', 'ライブラリー')}
   </nav>`;
 }
+function noPage() { hint('この画面は、練習用デモにはありません。'); }
 let menuOpenKey = 'bill';
 function menuOpen(k) { menuOpenKey = menuOpenKey === k ? '' : k; render(); }
 
@@ -196,24 +212,52 @@ function opt(name, val, html, id) {
 }
 function pick(name, val) { S.sel[name] = val; render(); }
 
-function payerStep(intro) {
-  return `${intro ? `<div class="small" style="margin-bottom:8px">${intro}</div>` : ''}
-  <table class="tbl"><tr><th></th><th>続柄</th><th>氏名</th><th>住所</th></tr></table>
-  ${opt('payer', 'self', `<b>支払人</b><div class="small">${P.name}<br>${P.addr.join('　')}</div>`, 'o_payer')}
-  ${opt('payer', 'add', '支払人の追加', 'o_payeradd')}`;
+// 支払人：本物は表の行。選ぶと灰色の丸に✓が付く
+function payerStep(rel = '続柄') {
+  const row = (val, id, cells) => `<tr class="pay ${S.sel.payer === val ? 'on' : ''}" id="${id}" onclick="pick('payer','${val}')"><td><span class="ckc"></span></td>${cells}</tr>`;
+  return `<table class="tbl"><tr><th></th><th>${rel}</th><th>氏名</th><th>住所</th></tr>
+  ${row('self', 'o_payer', `<td style="white-space:nowrap">支払人</td><td>${P.name}</td><td>Residential<br>${P.addr.join('<br>')}</td>`)}
+  ${row('add', 'o_payeradd', '<td colspan="3">支払人の追加</td>')}</table>`;
 }
-const CARDS = [['visa', 'Visa', '0.00%', '1-2営業日'], ['mc', 'Master Card', '0.00%', '1-2営業日'], ['amex', 'American Express', '0.00%', '7-10営業日'],
-  ['diners', 'Diners Club', '0.00%', '7-10営業日'], ['jcb', 'JCB', '0.00%', '7-10営業日'], ['discover', 'Discover', '0.00%', '7-10営業日'], ['ach', 'アメリカの銀行口座から自動引き落とし', '$1.00', '7-10営業日']];
-function cardTypeStep(fee) {
-  return `<table class="tbl" id="cardTable"><tr><th></th><th>支払方法</th><th>${fee}</th><th>時間</th></tr>
-  ${CARDS.map(([k, l, f, t]) => `<tr class="${S.sel.ctype === k ? 'on' : ''}" id="ct_${k}" onclick="pick('ctype','${k}')" style="cursor:pointer"><td><span class="rd" style="display:inline-flex;${S.sel.ctype === k ? 'border-color:#666' : ''}">${S.sel.ctype === k ? '<span style="width:10px;height:10px;border-radius:50%;background:#555"></span>' : ''}</span></td><td>${l}</td><td>${f}</td><td>${t}</td></tr>`).join('')}</table>
-  <div class="small" style="margin-top:8px">ご契約の通貨で課金されます。最大の連続したお支払で合計100,000米ドル。</div>`;
+// カード会社のマーク（本物の画面にならって、似せた絵）
+const LOGO = {
+  visa: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><text x="32" y="25" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="900" font-style="italic" fill="#1a1f71">VISA</text></svg>',
+  mc: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><circle cx="26" cy="18" r="11" fill="#eb001b"/><circle cx="38" cy="18" r="11" fill="#f79e1b" fill-opacity=".9"/></svg>',
+  amex: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><rect x="8" y="5" width="48" height="26" rx="2" fill="#2e77bb"/><text x="32" y="16" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#fff">AMERICAN</text><text x="32" y="26" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#fff">EXPRESS</text></svg>',
+  diners: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><circle cx="32" cy="14" r="9" fill="none" stroke="#0079be" stroke-width="2"/><path d="M29 8v12M35 8v12" stroke="#0079be" stroke-width="2"/><text x="32" y="32" text-anchor="middle" font-family="Georgia,serif" font-size="6.5" fill="#0079be">Diners Club</text></svg>',
+  ach: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><rect x="6" y="6" width="52" height="24" fill="#e3edf5" stroke="#9fb6c9"/><path d="M10 12h20M10 17h30M10 24h14M38 24h16" stroke="#7d93a8" stroke-width="1.5"/></svg>',
+  up: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><path d="M10 6h16l-5 24H5z" fill="#e21836"/><path d="M24 6h16l-5 24H19z" fill="#00447c"/><path d="M38 6h20l-5 24H33z" fill="#007b84"/><text x="32" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" font-style="italic" fill="#fff">UnionPay</text></svg>',
+  discover: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><text x="31" y="20" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="#231f20">DISC<tspan fill="#f58220">●</tspan>VER</text><path d="M18 32q22-2 40-12v12z" fill="#f58220"/></svg>',
+  jcb: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><rect x="16" y="6" width="10" height="24" rx="3" fill="#0b4ea2"/><rect x="27" y="6" width="10" height="24" rx="3" fill="#e60012"/><rect x="38" y="6" width="10" height="24" rx="3" fill="#009944"/><text x="21" y="22" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#fff">J</text><text x="32" y="22" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#fff">C</text><text x="43" y="22" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#fff">B</text></svg>',
+  taza: '<svg viewBox="0 0 64 36"><rect x="18" y="2" width="28" height="32" fill="#1d3557"/><path d="M25 10h14L27 26h12" stroke="#fff" stroke-width="3" fill="none"/><path d="M28 18h10" stroke="#7bd389" stroke-width="3"/></svg>',
+  tmt: '<svg viewBox="0 0 64 36"><rect width="64" height="36" fill="#f6f6f6"/><text x="12" y="22" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="900" font-style="italic" fill="#1a1f71">VISA</text><circle cx="28" cy="18" r="5" fill="#eb001b"/><circle cx="33" cy="18" r="5" fill="#f79e1b" fill-opacity=".9"/><text x="51" y="21" text-anchor="middle" font-family="Georgia,serif" font-size="7" font-weight="700" fill="#2a8ab8">TRUST</text></svg>',
+};
+const I1 = 'ご契約の通貨で課金されます。最大の連続したお支払で合計100,000米ドル。', I2 = '米ドルで課金されます。最大5件の連続したお支払で合計100,000米ドル。',
+  I3 = '支払人の選択した通貨で課金されます。最大5件の連続したお支払で合計100,000米ドル。';
+// 本物の並び（2026-10-30 にITAのマイページで確認）。自動支払いは7つ、オンライン決済は10
+const CARD = {
+  visa: ['Visa', '0.00%', '1-2営業日', I1], mc: ['Master Card', '0.00%', '1-2営業日', I1], amex: ['American Express', '0.00%', '1-2営業日', I1],
+  diners: ['Diners Club', '0.00%', '1-2営業日', I2], ach: ['アメリカの銀行口座から自動引き落とし', '$1.00', '7-10営業日', I2],
+  up: ['Union Pay', '0.00%', '1-2営業日', 'Union Payはクレジットカードのみご利用可能です。デビットカードやプリペイドカードといった他のカードは、課金拒否となります。ご契約の通貨で課金されます。最大5件の連続したお支払で合計100,000米ドル。'],
+  discover: ['Discover', '0.00%', '1-2営業日', I2], jcb: ['JCB', '0.00%', '1-2営業日', I2],
+  taza: ['Alternative payment method / currency (Tazapay)', '0.00%', '1-2営業日', I3], tmt: ['Alternative payment method / currency (TMT)', '0.00%', '1-2営業日', I3],
+};
+const CARD_LIST = { B: ['visa', 'mc', 'amex', 'diners', 'ach', 'discover', 'jcb'], C: ['visa', 'mc', 'amex', 'diners', 'ach', 'up', 'discover', 'jcb', 'taza', 'tmt'] };
+// 自動支払いとオンライン決済で、表の見出しの言葉が少し違う
+function cardTypeStep(kind) {
+  const [fee, time] = kind === 'C' ? ['コレクションチャージ', '手続き時間'] : ['コレクションフィー', 'お手続き時間'];
+  return `<div class="hs" id="cardTable"><table class="tbl ct"><tr><th></th><th></th><th>支払方法</th><th>${fee}</th><th>${time}</th><th>支払情報</th></tr>
+  ${CARD_LIST[kind].map(k => { const [l, f, t, info] = CARD[k], on = S.sel.ctype === k;
+    return `<tr class="${on ? 'on' : ''}" id="ct_${k}" onclick="pick('ctype','${k}')"><td><span class="rd">${on ? '<span class="dot2"></span>' : ''}</span></td><td><span class="lg">${LOGO[k]}</span></td><td>${l}</td><td>${f}</td><td>${t}</td><td class="info">${info}</td></tr>`; }).join('')}</table></div>
+  <div class="small" style="margin-top:8px;font-style:italic">上記に表示の手数料(${fee})は、ポリシーの基本プランに基づき計算されています。ライダーもしくは超過拠出金へのお支払いである場合、手数料は異なる場合があります。適用される手数料は、本手続きの「支払金額」に表示されます。</div>`;
 }
 function cardInfoStep() {
-  return `<div class="note" style="margin-bottom:10px">デモなので、カード番号は見本が入っています（入力はできません）。</div>
+  const k = S.sel.ctype && CARD[S.sel.ctype] ? S.sel.ctype : 'visa';
+  return `<div class="cardhead"><span class="lg">${LOGO[k]}</span>${CARD[k][0]}</div>
+  <div class="note" style="margin-bottom:10px">デモなので、見本が入っています（入力はできません）。</div>
   <div class="fld" id="f_card"><label>クレジットカード番号</label><input class="inp" value="4111 1111 1111 1111" readonly></div>
-  <div class="fld" id="f_exp"><label>有効期限月</label><div class="row2"><input class="inp" value="8" readonly><input class="inp" value="2028" readonly></div></div>
-  <div class="fld" id="f_cvv"><label>CVV（セキュリティ）コード</label><input class="inp" value="123" readonly style="width:110px"><div class="small">カードの裏の最終3桁の数字.</div></div>`;
+  <div class="fld" id="f_exp"><label>有効期限月</label><div class="row2"><input class="inp sel" value="8" readonly><input class="inp sel" value="2028" readonly></div></div>
+  <div class="fld" id="f_cvv"><label>CVVコード</label><div class="row2" style="align-items:center"><input class="inp" value="123" readonly style="width:150px"><svg viewBox="0 0 60 38" style="width:56px;flex:none"><rect width="60" height="38" rx="3" fill="#ccc"/><rect y="6" width="60" height="7" fill="#222"/><rect x="6" y="18" width="40" height="7" fill="#fff"/><text x="40" y="24" font-size="5" fill="#c00">123</text></svg></div><div class="small" style="font-style:italic">カードの裏の最終3桁の数字.</div></div>`;
 }
 const AGREE = '下のOKボタンをクリックすることで、上記のクレジットカードアカウントから上記に記入した金額を引き出すことを要求・授権します。銀行が断る場合、又は会社が支払を処理できない場合、プランは失効する可能性があることを理解します。';
 function nextWhat(list) {
@@ -222,7 +266,11 @@ function nextWhat(list) {
 }
 
 // A 請求通知（カードの自動引き落としをやめて、自分で支払う形にする）
-const FREQ_A = [['q', '三ヶ月毎の拠出金$600.00及び手数料$0.00の合計額$600.00'], ['h', '半年毎の拠出金$1,200.00及び手数料$0.00の合計額$1,200.00'], ['y', '年間拠出金$2,400.00及び手数料$0.00の合計額$2,400.00']];
+const FREQ_A = [['q', '三ヶ月毎の拠出金$600.00及び手数料$0.00の合計額$600.00'], ['h', '半年毎の拠出金$1,200.00及び手数料$0.00の合計額$1,200.00'], ['y', '年額一括払の拠出金$2,400.00及び手数料$0.00の合計額$2,400.00']];
+const PAYINFO = {
+  check: '<div class="t1b">チェック</div><div>小切手は必ず米国の銀行口座から（会社名）宛でお願い致します。小切手は下記の住所にお送りください。<br>（送り先の住所が表示されます）</div>',
+  wire: '<div class="t1b">電信送金</div>', self: '<div class="t1b">個人払い</div>',
+};
 const A = {
   key: 'A', steps: ['支払人', '支払方法', '通知のタイプ', '拠出金＆頻度', '確認', '結果'],
   body: [
@@ -230,12 +278,13 @@ const A = {
     () => opt('method', 'wire', '<div class="t1">電信送金</div><div class="t2">支払人が電信送金で、会社の口座へと拠出金支払いを送金。最大の連続したお支払いで合計100,000米ドル。</div>', 'o_wire')
       + opt('method', 'check', '<div class="t1">チェック</div><div class="t2">支払人がアメリカの銀行口座の小切手を発行し弊社へ送付。最大の連続したお支払で合計100,000米ドル。</div>', 'o_check')
       + opt('method', 'self', '<div class="t1">個人払い</div><div class="t2">支払人がオンラインで支払を実行</div>', 'o_selfpay'),
-    () => opt('ntype', 'mail', `<b>メールで通知</b><div class="small">${P.email}<br>受け取り者へ次の支払日をメールでお知らせいたします</div>`, 'o_mail'),
+    () => opt('ntype', 'mail', `<div class="t1">メールで通知</div><div class="small">受領者 ${P.email}<br><br>受け取り者へ次の支払日をメールでお知らせいたします</div>`, 'o_mail'),
     () => FREQ_A.map(([k, l]) => opt('afreq', k, l, 'o_f' + k)).join(''),
-    () => `<div class="sec">支払人住所</div><div>${P.name}<br>${P.addr.join('<br>')}</div>
-      <div class="sec">支払情報</div><div>${({ wire: '電信送金', check: 'チェック', self: '個人払い' })[S.sel.method] || 'チェック'}</div>
+    () => `<div class="sec">支払人住所</div><div>${P.name}<br>Residential<br>${P.addr.join('<br>')}</div>
+      <div class="sec">支払情報</div>${PAYINFO[S.sel.method] || PAYINFO.check}
       <div class="sec">拠出金</div><div>${(FREQ_A.find(f => f[0] === S.sel.afreq) || FREQ_A[0])[1]}</div>
-      <div class="sec">通知</div><div>メールで通知（${P.email}）</div>`,
+      <div class="sec">通知</div><div>メールによる通知(${P.email})</div>
+      ${(S.sel.method || 'check') === 'check' ? '<div class="inote">チェックが弊社に届いてからコレクションへ1営業日、銀行からなにも問題がなければ、お客様のプランへ拠出金が反映されるに2営業日かかります。またお手続きを始める前にプラン参加者、お支払い者情報が必要になる場合がございます。</div>' : ''}`,
     () => `<div class="okmsg" id="done">お手続きが完了しました。</div><div class="small">支払人：${P.name}　／　通知：メール</div>
       ${nextWhat(['ビリングサマリーへ移動。', '今オンラインで支払をすることを希望する', 'セットアップまたは請求通知の変更', 'セットアップまたは定期的支払いを変更する'])}
       <div style="margin-top:14px"><a href="#Amail" id="toMail">▶ このあと届くメール（見本）を見る</a></div>`,
@@ -247,7 +296,7 @@ const B = {
   key: 'B', steps: ['支払人', '支払種類', '支払情報', '支払金額', '支払い期間', '確認', '結果'],
   body: [
     () => payerStep(),
-    () => cardTypeStep('コレクションフィー'),
+    () => cardTypeStep('B'),
     () => cardInfoStep(),
     () => '<div class="small" style="margin-bottom:6px">お客様は積み立て予定額のお支払いをご希望されるか、違う額をお支払いされるかご教示ください</div>' + FREQ_B.map(([k, l]) => opt('bfreq', k, l, 'o_b' + k)).join(''),
     () => opt('period', 'future', `<b>将来期間分のみ</b><div class="small">お客様のご指定の方法で、右記の期日以降、各頻度ご指定の日にち付で課金いたします。日にちはカレンダーをクリックして指定します。</div><input class="inp" value="📅 15/11/2026" readonly style="margin-top:6px;width:170px">`, 'o_future')
@@ -265,8 +314,8 @@ const B = {
 const C = {
   key: 'C', steps: ['支払人', '支払種類', '支払情報', '支払金額', '確認', '結果'],
   body: [
-    () => payerStep(),
-    () => cardTypeStep('コレクションチャージ'),
+    () => payerStep('関係／続柄'),
+    () => cardTypeStep('C'),
     () => cardInfoStep(),
     () => `<div class="small" style="margin-bottom:6px">拠出金額のお支払いをご希望されるか、それとも異なる額の拠出をご希望されるかをご指定ください。</div>
       ${opt('camt', 'months', '［0］年［1］ヶ月分の拠出金支払い：0年1ヶ月分の拠出金$200.00及び手数料$0.00合計額$200.00', 'o_cmonths')}
@@ -347,8 +396,8 @@ function render() {
     S.menu = false; preselect(r);
     const cfg = { A, B, C }[m[1]];
     const t = { A: ['請求通知', '請求通知', 'このオプションは、請求通知がどのように処理されるかユーザーによって選ぶことを可能にします。', 'notice'],
-      B: ['自動支払い', '自動支払い', 'このオプションでは、ユーザーがクレジットカードまたはアメリカの口座からの引き落としによる定期的支払を選択することを可能にします。こちらのオプションから、未払い分のお支払い及び今後のお支払い両方の設定をしていただけます。', 'auto'],
-      C: ['オンライン決済', 'オンライン決済', '', 'online'] }[m[1]];
+      B: ['自動支払い', '自動支払い', 'このオプションでは、ユーザーがクレジットカードまたはアメリカの口座からの引き落としによる定期的支払を選択することを可能にします。こちらのオプションから、未払い分のお支払い及び今後のお支払い両方の設定をしていただけます。また、今後のお支払いのみの設定も可能です。', 'auto'],
+      C: ['オンライン決済', 'オンライン決済', '本機能により、「今回限りのお支払い」が可能です。※こちらの機能からは、今後の拠出金支払の自動課金・引き落としの設定はできませんのでご留意ください。', 'online'] }[m[1]];
     app.innerHTML = page(t[0], ['アカウントアクセス', 'ポリシー', '請求', t[1]], (t[2] ? `<div class="note">${t[2]}</div>` : '') + wizard(cfg, +m[2]), 'bill', t[3]);
     if (!SH) setTimeout(() => $('#cur')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 30);
     return;
@@ -373,10 +422,12 @@ function preselect(r) {
 function home() {
   return `<div class="home"><h1 style="margin-bottom:6px">積立プランの操作を練習する</h1>
   <p class="small">本物のマイページとよく似た画面で、手続きの流れを練習できます。お客様と一緒に、同じ順番で押してみてください。<br>※本物のサイトではありません。入力した内容はどこにも送られません。</p>
-  <a class="card" href="#A1" onclick="S.sel={}"><span class="tag">請求 › 請求通知</span><br><b>① カードの自動引き落としをやめる（一時停止）</b><p>支払い方法をチェック（小切手）などに変えて、自動で引き落とされないようにします。初期口座の期間が終わってから。</p></a>
-  <a class="card" href="#B1" onclick="S.sel={}"><span class="tag">請求 › 自動支払い</span><br><b>② カードの変更・支払い頻度の変更・再開</b><p>新しいカードを登録する、月払い↔年払いを変える、止めていた引き落としを再開する。</p></a>
-  <a class="card" href="#C1" onclick="S.sel={}"><span class="tag">請求 › オンライン決済</span><br><b>③ 引き落とされなかった分を払う（滞納時）</b><p>カードが通らなかった分などを、その場でカード払いします。</p></a>
-  <a class="card" href="#Dmail" onclick="S.sel={}"><span class="tag">解約の確認</span><br><b>④ 一部解約・解約の申込みを確認して署名する</b><p>サポートに連絡すると届く解約申込みを、メールが届いてから72時間以内に確認して署名します。</p></a>
+  <a class="card" href="#A1" onclick="S.sel={}"><span class="tag">請求 › 請求通知</span><br><b>① カードの自動引き落としをやめる（一時停止）</b><p>支払い方法をチェック（小切手）などに変えて、自動で引き落とされないようにします。初期口座の期間が終わってから。止めている間は、毎月、滞納のお知らせメールが届きます。</p></a>
+  <a class="card" href="#B1" onclick="S.sel={}"><span class="tag">請求 › 自動支払い</span><br><b>② カードの変更・引き落としの再開</b><p>新しいカードを登録する、止めていた引き落としを再開する。</p></a>
+  <a class="card" href="#B1" onclick="S.sel={}"><span class="tag">請求 › 自動支払い</span><br><b>③ 支払い頻度の変更</b><p>月払い・三ヶ月毎・半年毎・年払いを変える。「支払金額」の画面で選びます。メールが届いたら完了です。</p></a>
+  <a class="card" href="#C1" onclick="S.sel={}"><span class="tag">請求 › オンライン決済</span><br><b>④ 引き落とされなかった分を払う（滞納時）</b><p>カードが通らなかった分などを、その場でカード払いします。年払いの方も、払えなかった月の分だけ払えば大丈夫です。</p></a>
+  <a class="card" href="#Dmail" onclick="S.sel={}"><span class="tag">解約の確認</span><br><b>⑤ 一部解約・解約の申込みを確認して署名する</b><p>サポートに連絡すると届く解約申込みを、メールが届いてから72時間以内に確認して署名します。</p></a>
+  <div class="note" style="margin-top:16px"><b>大事なこと</b><br>ログインしたときに「身分証明書の更新」が出たら、必ず更新してください。2回スキップすると、アカウントに入れなくなります。</div>
   <p class="small" style="margin-top:18px">ログイン画面から練習する： <a href="#login">ログイン画面を開く</a></p></div>`;
 }
 function loginPage() {
@@ -407,11 +458,18 @@ function overview() {
 function billsum() {
   return page('請求概要', ['アカウントアクセス', 'ポリシー', '請求', '概要'],
     `<div class="box"><div class="box-h">ⓘ 全般</div><div class="box-b"><dl class="kv">
-      <div><dt>発効日</dt><dd>${P.eff}</dd></div><div><dt>期限</dt><dd>${P.due}</dd></div>
-      <div><dt>毎月 拠出金</dt><dd>$200.00</dd></div><div><dt>年間拠出金</dt><dd>$2,400.00</dd></div>
-      <div><dt>定期拠出金・前納支払最大可能額</dt><dd>（画面に表示）</dd></div><div><dt>一括払い</dt><dd>$0.00</dd></div></dl></div></div>
-    <div class="box"><div class="box-h">ⓘ クレジットカード 情報</div><div class="box-b"><dl class="kv"><div><dt>カード</dt><dd>${P.card}</dd></div><div><dt>有効期限</dt><dd>${P.exp}</dd></div></dl></div></div>
-    <p class="small">メニューの「請求」から手続きを選べます。<a href="#home">練習メニューに戻る</a></p>`, 'bill', 'bsum');
+      <div><dt>発効日</dt><dd>${P.eff}</dd></div><div><dt>毎月 拠出金</dt><dd>$200.00</dd></div>
+      <div><dt>期限</dt><dd>${P.due}</dd></div><div><dt>年間拠出金</dt><dd>$2,400.00</dd></div>
+      <div><dt>定期拠出金・前納支払最大可能額</dt><dd>$5,600.00</dd></div><div><dt>一括払い</dt><dd>$0.00</dd></div></dl></div></div>
+    <div class="box"><div class="box-h">ⓘ クレジットカード 情報</div><div class="box-b"><dl class="kv"><div><dt>クレジットカードタイプ</dt><dd>Visa</dd></div>
+      <div><dt>クレジットカード番号</dt><dd>XXXXXXXXXXXX1111</dd></div><div><dt>クレジットカードの有効期限</dt><dd>08/2028</dd></div></dl></div></div>
+    <div class="box"><div class="box-h">ⓘ 支払い履歴</div><div class="box-b"><table class="tbl"><tr><th>支払種類</th><th>取引日</th><th>取引金額</th><th>最終の支払済日</th></tr>
+      ${[['15/10/2026', '15/11/2026'], ['15/09/2026', '15/10/2026'], ['15/08/2026', '15/09/2026']].map(([a, b]) => `<tr><td>拠出金</td><td>${a}</td><td>$200.00</td><td>${b}</td></tr>`).join('')}</table>
+      <div class="small" style="margin-top:6px">注：拠出金のお支払いは手数料が含まれる場合がございます。</div></div></div>
+    <div class="box"><div class="box-h">ⓘ 何をご希望ですか？</div><div class="box-b">
+      ${[['プラン概要へ戻る', 'overview'], ['オンラインで支払を実行する', 'C1'], ['請求通知の設定または変更', 'A1'], ['定期支払の設定または変更', 'B1'], ['拠出金の支払のための電信送金を希望する', ''], ['拠出金の支払のため、小切手を送ることを希望する', '']]
+        .map(([l, r]) => `<div style="padding:5px 0"><a href="javascript:void 0" onclick="${r ? `S.sel={};go('${r}')` : 'noPage()'}">${l}</a></div>`).join('')}</div></div>
+    <p class="small"><a href="#home">練習メニューに戻る</a></p>`, 'bill', 'bsum');
 }
 function mailPage(kind) {
   const body = kind === 'A'
