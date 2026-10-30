@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>積立プラン操作の練習（デモ）</title>
+<!--
+  積立プランのマイページ操作を、お客様と一緒に練習するためのデモ（2026-10-30）。
+  本物のサイトではない。入力した内容はどこにも送らない・保存しない。ロゴ・社名は入れない。
+  画面の流れは公式ガイド IH144（請求通知）・IH146（自動支払い）・IH124（オンライン決済）・IH162（解約の確認）に合わせた。
+  #A3 のように画面名を付けて開くと、その画面から始まる（動画の撮影にも使う）。
+-->
+<style>
+:root{
+  --demo:#e8590c; --bar:#dcdcdc; --line:#d9d9d9; --text:#333; --muted:#777;
+  --steel:#5b7fa8; --steel2:#adc0d8; --menu:#e9e9e9; --blue:#4a8af4; --teal:#3aa99b; --red:#e05a5a;
+  --panel:#f4f4f4; --note:#fbf3dc; --link:#3a7bd5;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:14px;line-height:1.55}
+button{font:inherit}
+.demo{background:var(--demo);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:6px 10px;letter-spacing:.02em}
+.demo b{background:#fff;color:var(--demo);border-radius:3px;padding:0 5px;margin-right:6px}
+.top{background:var(--bar);display:flex;align-items:center;justify-content:space-between;padding:10px 14px;min-height:54px}
+.brand{font-size:15px;font-weight:700;color:#666;letter-spacing:.04em}
+.brand small{display:block;font-size:10px;font-weight:600;color:var(--demo);letter-spacing:0}
+.icons{display:flex;gap:14px;align-items:center}
+.ic{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:#666;border-radius:4px;cursor:pointer;border:0;background:none;padding:0}
+.ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7}
+.ic.on{background:#c8c8c8}
+.wrap{display:flex;min-height:calc(100vh - 84px)}
+.side{width:250px;background:var(--menu);flex:none;padding:8px 0}
+.main{flex:1;min-width:0;padding:16px 16px 40px}
+@media (max-width:760px){
+  .side{display:none;position:absolute;left:0;right:0;z-index:5;width:auto;box-shadow:0 6px 14px rgba(0,0,0,.15)}
+  .side.open{display:block}
+  .wrap{position:relative}
+}
+.m-item{display:flex;align-items:center;gap:10px;padding:11px 18px;color:#444;cursor:pointer;user-select:none}
+.m-item svg{width:17px;height:17px;stroke:#555;fill:none;stroke-width:1.6;flex:none}
+.m-item .arr{margin-left:auto;color:#888}
+.m-item.open{background:var(--steel);color:#fff}
+.m-item.open svg{stroke:#fff}.m-item.open .arr{color:#fff}
+.m-sub{padding:10px 18px 10px 46px;color:#444;cursor:pointer}
+.m-sub.sel{background:var(--steel2)}
+.m-alert{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-left:auto}
+h1{font-size:20px;font-weight:400;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+.crumb{background:var(--panel);padding:9px 12px;font-size:13px;color:#666;margin:8px 0 14px}
+.crumb a{color:var(--link)}
+.box{border:1px solid var(--line);margin-bottom:12px;background:#fff}
+.box-h{background:var(--panel);padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:15px}
+.box-b{padding:12px 14px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.kv dt{font-weight:700;font-size:13px}.kv dd{margin:0 0 4px}
+.note{background:var(--note);border-left:4px solid #f0c36d;padding:10px 12px;font-size:13px;color:#7a6200;margin-bottom:12px}
+.step{border:1px solid var(--line);margin-bottom:8px;background:#fff}
+.step-h{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);font-size:15px}
+.num{width:22px;height:22px;border-radius:50%;background:var(--steel);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.step-h .pm{margin-left:auto;color:#999;font-size:20px;line-height:1}
+.step-b{padding:12px 14px}
+.step-f{background:var(--panel);padding:10px 12px;display:flex;justify-content:flex-end;gap:8px}
+.btn{border:0;border-radius:2px;padding:7px 16px;color:#fff;background:var(--blue);cursor:pointer;font-size:14px}
+.btn.teal{background:var(--teal);border-radius:4px}.btn.red{background:var(--red);border-radius:4px}.btn.gray{background:#c9c9c9;color:#444}
+.btn.green{background:#33d1b0;width:100%;border-radius:2px;padding:10px}
+.btn.navy{background:#2a72a8;width:100%;border-radius:2px;padding:10px}
+.btn[disabled]{opacity:.45;cursor:default}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid #eee;cursor:pointer}
+.opt:last-child{border-bottom:0}
+.rd{width:20px;height:20px;border:1.5px solid #bbb;border-radius:50%;flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;background:#fff}
+.opt.on .rd{border-color:#666}.opt.on .rd::after{content:"";width:10px;height:10px;border-radius:50%;background:#555}
+.ck{width:18px;height:18px;border:1.5px solid #aaa;border-radius:3px;flex:none;margin-top:2px;background:#fff;display:flex;align-items:center;justify-content:center}
+.opt.on .ck{background:var(--teal);border-color:var(--teal)}.opt.on .ck::after{content:"✓";color:#fff;font-size:12px;font-weight:700}
+.opt .t1{font-size:16px;color:var(--link)}.opt .t2{font-size:12px;color:var(--muted)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th,.tbl td{border-bottom:1px solid #eee;padding:7px 5px;text-align:left;vertical-align:top}
+.tbl th{color:#666;font-weight:600}
+.tbl tr.on td{background:#eef4fb}
+.fld{margin-bottom:12px}.fld label{display:block;font-size:13px;margin-bottom:4px}
+.inp{width:100%;border:1px solid #ccc;background:#f7f7f7;padding:8px 10px;border-radius:2px;color:#555;font-size:14px}
+.row2{display:flex;gap:8px}
+.sec{font-size:15px;color:#555;border-bottom:1px solid #ddd;padding:6px 0;margin:10px 0 6px}
+.small{font-size:12px;color:var(--muted)}
+.okmsg{font-size:16px;margin:4px 0 10px}
+.panel-h{background:var(--steel);color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.panel-h .dot{width:14px;height:14px;border-radius:50%;background:#fff;flex:none}
+.panel-h .pm{margin-left:auto}
+.acc{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding:10px 4px;color:#555}
+.warn{color:#a15c00;font-size:13px;margin:10px 0}
+.code6{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.code6 input{width:38px;height:44px;text-align:center;font-size:20px;border:1px solid #bbb;border-radius:3px}
+.mail{max-width:520px;margin:0 auto;border:1px solid #ddd;border-radius:6px;overflow:hidden;background:#fff}
+.mail-top{padding:12px 14px;border-bottom:1px solid #eee;display:flex;gap:10px;align-items:center}
+.av{width:36px;height:36px;border-radius:50%;background:#a9a0d9;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.mail-b{padding:16px}
+.mail-b .bar{height:4px;background:var(--steel);margin:-16px -16px 14px}
+.home{max-width:640px;margin:0 auto;padding:18px 16px 40px}
+.card{display:block;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px;color:inherit;text-decoration:none;background:#fff}
+.card b{font-size:16px}.card p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.card .tag{display:inline-block;font-size:11px;color:#fff;background:var(--steel);border-radius:3px;padding:1px 6px;margin-bottom:4px}
+.hint{position:fixed;left:12px;right:12px;bottom:12px;background:#222c;color:#fff;border-radius:8px;padding:10px 12px;font-size:13px;z-index:9;display:none}
+.hint.show{display:block}
+.login{max-width:320px;margin:30px auto;border:1px solid #e3e3e3;box-shadow:2px 2px 6px rgba(0,0,0,.08);padding:20px 26px 26px;text-align:center}
+.login h2{font-weight:400;font-size:18px;margin:0 0 16px}
+.login .inp{margin-bottom:12px;background:#eef0f5;border:0;padding:11px}
+a{color:var(--link)}
+.shoot .hint{display:none!important}
+</style>
+</head>
+<body>
+<div class="demo"><b>練習用デモ</b>本物のサイトではありません。入力した内容はどこにも送られません。</div>
+<div id="app"></div>
+<div class="hint" id="hint"></div>
+<script>
+'use strict';
+// ---------- 見本のデータ（架空） ----------
+const P = {
+  name: '山田 花子（見本）', plan: 'DEMO-000123', eff: '15/06/2025', due: '15/11/2026',
+  monthly: 200, card: 'Visa XXXXXXXXXXXX1111', exp: '8/2028',
+  addr: ['東京都千代田区 見本1-2-3', '日本'],
+  email: 'sample@example.com', unpaid: 400,
+};
+const $ = (s, el = document) => el.querySelector(s);
+const usd = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2 });
+const SH = location.search.includes('shoot');   // 撮影モード（ヒントを出さない）
+if (SH) document.documentElement.classList.add('shoot');
+
+// ---------- アイコン ----------
+const I = {
+  home: '<path d="M3 11l9-7 9 7v9H5v-9"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',
+  tool: '<path d="M14 7a4 4 0 0 1 5 5l-9 9-3-3 9-9"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+  menu: '<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>', power: '<path d="M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0"/>',
+  doc: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/>', bill: '<rect x="3" y="6" width="18" height="12" rx="1"/><circle cx="12" cy="12" r="2.5"/>',
+  gen: '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 9h8M8 13h8M8 17h5"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 6l9 7 9-7"/>',
+  tools: '<path d="M4 20l6-6M14 4a4 4 0 0 1 5 5l-5 5-5-5z"/>', people: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c1-3 3-5 6-5s5 2 6 5M15 15c3 0 5 2 6 5"/>',
+  book: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/>', search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/>',
+};
+const svg = k => `<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+
+// ---------- 状態 ----------
+const S = { menu: false, sel: {}, surrender: false };
+function go(r) { location.hash = r; }
+window.addEventListener('hashchange', render);
+
+function topBar(menuOn) {
+  return `<div class="top"><div class="brand">マイページ<small>（練習用デモ）</small></div>
+  <div class="icons"><span class="ic" onclick="go('dash')">${svg('home')}</span><span class="ic">${svg('list')}</span><span class="ic">${svg('tool')}</span><span class="ic">${svg('user')}</span>
+  <button class="ic ${menuOn ? 'on' : ''}" id="menuBtn" onclick="toggleMenu()">${svg('menu')}</button><span class="ic" onclick="go('')">${svg('power')}</span></div></div>`;
+}
+function toggleMenu() { S.menu = !S.menu; render(); }
+
+// 左メニュー。open = 開いている大項目、sel = 選んでいる小項目
+function side(open, sel) {
+  const big = (key, icon, label, subs, extra = '') => {
+    const isOpen = open === key;
+    let h = `<div class="m-item ${isOpen ? 'open' : ''}" id="m_${key}" onclick="menuOpen('${key}')">${svg(icon)}${label}${extra}${subs ? `<span class="arr">${isOpen ? '⌄' : '‹'}</span>` : ''}</div>`;
+    if (isOpen && subs) h += subs.map(([k, l, r]) => `<div class="m-sub ${sel === k ? 'sel' : ''}" id="s_${k}" onclick="go('${r}')">${l}</div>`).join('');
+    return h;
+  };
+  return `<nav class="side ${S.menu ? 'open' : ''}" id="side">
+    ${S.surrender ? `<div class="m-item" id="m_surr" onclick="go('D2')">${svg('mail')}解約の確認<span class="m-alert">!</span></div>` : ''}
+    ${big('gen', 'gen', '一般', [['ov', '概要', 'overview']])}
+    ${big('bill', 'bill', '請求', [['bsum', '概要', 'billsum'], ['online', 'オンライン決済', 'C1'], ['auto', '自動支払い', 'B1'], ['notice', '請求通知', 'A1'], ['wire', '電信送金情報', 'billsum'], ['check', '小切手指示', 'billsum']])}
+    ${big('docs', 'doc', 'ドキュメントセンター')}
+    ${big('tools', 'tools', 'オンラインツール', [])}
+    ${big('rel', 'people', '続柄', [])}
+    ${big('lib', 'book', 'ライブラリー')}
+  </nav>`;
+}
+let menuOpenKey = 'bill';
+function menuOpen(k) { menuOpenKey = menuOpenKey === k ? '' : k; render(); }
+
+function page(title, crumbs, body, open, sel) {
+  return topBar(S.menu) + `<div class="wrap">${side(open ?? menuOpenKey, sel)}<main class="main">
+    <h1>${title}</h1><div class="sub">${P.plan} - ${P.name}</div>
+    <div class="crumb">🏠 ${crumbs.map((c, i) => i < crumbs.length - 1 ? `<a>${c}</a>` : c).join(' › ')}</div>${body}</main></div>`;
+}
+
+// ---------- 手続きの画面（番号つきの折りたたみ） ----------
+function wizard(cfg, cur) {
+  return cfg.steps.map((label, i) => {
+    const n = i + 1;
+    if (n !== cur) return `<div class="step"><div class="step-h"><span class="num">${n}</span>${label}<span class="pm">＋</span></div></div>`;
+    const body = cfg.body[i]();
+    const isLast = n === cfg.steps.length;
+    return `<div class="step" id="cur"><div class="step-h"><span class="num">${n}</span>${label}<span class="pm">—</span></div>
+      <div class="step-b">${body}</div>${isLast ? '' : `<div class="step-f"><button class="btn" id="next" onclick="nextStep('${cfg.key}',${n})">次へ</button></div>`}</div>`;
+  }).join('');
+}
+function nextStep(key, n) { const need = NEED[key + n]; if (need && !S.sel[need]) return hint('選んでから「次へ」を押してください。'); go(key + (n + 1)); }
+const NEED = { A1: 'payer', A2: 'method', A3: 'ntype', A4: 'afreq', B1: 'payer', B2: 'ctype', B4: 'bfreq', B5: 'period', C1: 'payer', C2: 'ctype', C4: 'camt' };
+function opt(name, val, html, id) {
+  const on = S.sel[name] === val;
+  return `<div class="opt ${on ? 'on' : ''}" ${id ? `id="${id}"` : ''} onclick="pick('${name}','${val}')"><span class="rd"></span><div style="flex:1">${html}</div></div>`;
+}
+function pick(name, val) { S.sel[name] = val; render(); }
+
+function payerStep(intro) {
+  return `${intro ? `<div class="small" style="margin-bottom:8px">${intro}</div>` : ''}
+  <table class="tbl"><tr><th></th><th>続柄</th><th>氏名</th><th>住所</th></tr></table>
+  ${opt('payer', 'self', `<b>支払人</b><div class="small">${P.name}<br>${P.addr.join('　')}</div>`, 'o_payer')}
+  ${opt('payer', 'add', '支払人の追加', 'o_payeradd')}`;
+}
+const CARDS = [['visa', 'Visa', '0.00%', '1-2営業日'], ['mc', 'Master Card', '0.00%', '1-2営業日'], ['amex', 'American Express', '0.00%', '7-10営業日'],
+  ['diners', 'Diners Club', '0.00%', '7-10営業日'], ['jcb', 'JCB', '0.00%', '7-10営業日'], ['discover', 'Discover', '0.00%', '7-10営業日'], ['ach', 'アメリカの銀行口座から自動引き落とし', '$1.00', '7-10営業日']];
+function cardTypeStep(fee) {
+  return `<table class="tbl" id="cardTable"><tr><th></th><th>支払方法</th><th>${fee}</th><th>時間</th></tr>
+  ${CARDS.map(([k, l, f, t]) => `<tr class="${S.sel.ctype === k ? 'on' : ''}" id="ct_${k}" onclick="pick('ctype','${k}')" style="cursor:pointer"><td><span class="rd" style="display:inline-flex;${S.sel.ctype === k ? 'border-color:#666' : ''}">${S.sel.ctype === k ? '<span style="width:10px;height:10px;border-radius:50%;background:#555"></span>' : ''}</span></td><td>${l}</td><td>${f}</td><td>${t}</td></tr>`).join('')}</table>
+  <div class="small" style="margin-top:8px">ご契約の通貨で課金されます。最大の連続したお支払で合計100,000米ドル。</div>`;
+}
+function cardInfoStep() {
+  return `<div class="note" style="margin-bottom:10px">デモなので、カード番号は見本が入っています（入力はできません）。</div>
+  <div class="fld" id="f_card"><label>クレジットカード番号</label><input class="inp" value="4111 1111 1111 1111" readonly></div>
+  <div class="fld" id="f_exp"><label>有効期限月</label><div class="row2"><input class="inp" value="8" readonly><input class="inp" value="2028" readonly></div></div>
+  <div class="fld" id="f_cvv"><label>CVV（セキュリティ）コード</label><input class="inp" value="123" readonly style="width:110px"><div class="small">カードの裏の最終3桁の数字.</div></div>`;
+}
+const AGREE = '下のOKボタンをクリックすることで、上記のクレジットカードアカウントから上記に記入した金額を引き出すことを要求・授権します。銀行が断る場合、又は会社が支払を処理できない場合、プランは失効する可能性があることを理解します。';
+function nextWhat(list) {
+  return `<div class="sec">次に何を希望しますか。</div>${list.map((l, i) => `<div class="opt"><span class="rd"></span><div>${l}</div></div>`).join('')}
+  <div class="step-f" style="margin:10px -14px -12px"><button class="btn" onclick="go('billsum')">次へ</button></div>`;
+}
+
+// A 請求通知（カードの自動引き落としをやめて、自分で支払う形にする）
+const FREQ_A = [['q', '三ヶ月毎の拠出金$600.00及び手数料$0.00の合計額$600.00'], ['h', '半年毎の拠出金$1,200.00及び手数料$0.00の合計額$1,200.00'], ['y', '年間拠出金$2,400.00及び手数料$0.00の合計額$2,400.00']];
+const A = {
+  key: 'A', steps: ['支払人', '支払方法', '通知のタイプ', '拠出金＆頻度', '確認', '結果'],
+  body: [
+    () => payerStep(),
+    () => opt('method', 'wire', '<div class="t1">電信送金</div><div class="t2">支払人が電信送金で、会社の口座へと拠出金支払いを送金。最大の連続したお支払いで合計100,000米ドル。</div>', 'o_wire')
+      + opt('method', 'check', '<div class="t1">チェック</div><div class="t2">支払人がアメリカの銀行口座の小切手を発行し弊社へ送付。最大の連続したお支払で合計100,000米ドル。</div>', 'o_check')
+      + opt('method', 'self', '<div class="t1">個人払い</div><div class="t2">支払人がオンラインで支払を実行</div>', 'o_selfpay'),
+    () => opt('ntype', 'mail', `<b>メールで通知</b><div class="small">${P.email}<br>受け取り者へ次の支払日をメールでお知らせいたします</div>`, 'o_mail'),
+    () => FREQ_A.map(([k, l]) => opt('afreq', k, l, 'o_f' + k)).join(''),
+    () => `<div class="sec">支払人住所</div><div>${P.name}<br>${P.addr.join('<br>')}</div>
+      <div class="sec">支払情報</div><div>${({ wire: '電信送金', check: 'チェック', self: '個人払い' })[S.sel.method] || 'チェック'}</div>
+      <div class="sec">拠出金</div><div>${(FREQ_A.find(f => f[0] === S.sel.afreq) || FREQ_A[0])[1]}</div>
+      <div class="sec">通知</div><div>メールで通知（${P.email}）</div>`,
+    () => `<div class="okmsg" id="done">お手続きが完了しました。</div><div class="small">支払人：${P.name}　／　通知：メール</div>
+      ${nextWhat(['ビリングサマリーへ移動。', '今オンラインで支払をすることを希望する', 'セットアップまたは請求通知の変更', 'セットアップまたは定期的支払いを変更する'])}
+      <div style="margin-top:14px"><a href="#Amail" id="toMail">▶ このあと届くメール（見本）を見る</a></div>`,
+  ],
+};
+// B 自動支払い（カードの変更・頻度の変更・カード払いの再開）
+const FREQ_B = [['m', '月額拠出金$200.00および手数料$0.00の合計額$200.00'], ['q', '三ヶ月毎の拠出金$600.00及び手数料$0.00の合計額$600.00'], ['h', '半年毎の拠出金$1,200.00及び手数料$0.00の合計額$1,200.00'], ['y', '年額一括払の拠出金$2,400.00及び手数料$0.00の合計額$2,400.00']];
+const B = {
+  key: 'B', steps: ['支払人', '支払種類', '支払情報', '支払金額', '支払い期間', '確認', '結果'],
+  body: [
+    () => payerStep(),
+    () => cardTypeStep('コレクションフィー'),
+    () => cardInfoStep(),
+    () => '<div class="small" style="margin-bottom:6px">お客様は積み立て予定額のお支払いをご希望されるか、違う額をお支払いされるかご教示ください</div>' + FREQ_B.map(([k, l]) => opt('bfreq', k, l, 'o_b' + k)).join(''),
+    () => opt('period', 'future', `<b>将来期間分のみ</b><div class="small">お客様のご指定の方法で、右記の期日以降、各頻度ご指定の日にち付で課金いたします。日にちはカレンダーをクリックして指定します。</div><input class="inp" value="📅 15/11/2026" readonly style="margin-top:6px;width:170px">`, 'o_future')
+      + opt('period', 'past', '<b>過去及び将来期間分</b><div class="small">過去の未納分拠出金は、表示のある設定日当日以降、日次で順次課金し、次回の定期拠出分は各頻度設定されている日にち付で課金いたします。</div>', 'o_past'),
+    () => `<div class="sec">支払い者と請求先住所</div><div>${P.name}<br>${P.addr.join('<br>')}</div>
+      <div class="sec">支払情報</div><div>${P.card}<br>有効期限 ${P.exp}</div>
+      <div class="sec">拠出金額</div><div>${(FREQ_B.find(f => f[0] === S.sel.bfreq) || FREQ_B[0])[1]}</div>
+      <div class="sec">支払い期間</div><div>${S.sel.period === 'past' ? '過去及び将来期間分' : '将来期間分のみ - 15/11/2026'}</div>
+      <div class="small" style="margin-top:10px" id="agree">${AGREE}</div>`,
+    () => `<div class="okmsg" id="done">お手続きが完了しました。</div><div class="small">${P.card}　／　${(FREQ_B.find(f => f[0] === S.sel.bfreq) || FREQ_B[0])[1]}</div>
+      ${nextWhat(['今オンラインで支払をすることを希望する', 'セットアップまたは請求通知の変更', 'ビリングサマリーへ移動', 'セットアップまたは定期的支払いを変更する'])}`,
+  ],
+};
+// C オンライン決済（滞納分などをその場で払う）
+const C = {
+  key: 'C', steps: ['支払人', '支払種類', '支払情報', '支払金額', '確認', '結果'],
+  body: [
+    () => payerStep(),
+    () => cardTypeStep('コレクションチャージ'),
+    () => cardInfoStep(),
+    () => `<div class="small" style="margin-bottom:6px">拠出金額のお支払いをご希望されるか、それとも異なる額の拠出をご希望されるかをご指定ください。</div>
+      ${opt('camt', 'months', '［0］年［1］ヶ月分の拠出金支払い：0年1ヶ月分の拠出金$200.00及び手数料$0.00合計額$200.00', 'o_cmonths')}
+      ${opt('camt', 'max', '前納支払最大可能額の定期拠出金支払い：（画面に表示される金額）', 'o_cmax')}
+      ${opt('camt', 'unpaid', `未払拠出金額 <b>${usd(P.unpaid)}</b> 及び手数料$0.00 プラン［基本プラン］の合計額${usd(P.unpaid)}`, 'o_cunpaid')}
+      ${opt('camt', 'excess', '超過拠出金額$［　］及び手数料$0.00 プラン［基本プラン］の合計額$0.00', 'o_cexcess')}
+      ${opt('camt', 'other', 'その他の金額$［　］及び手数料$0.00 プラン［基本プラン］の合計額$0.00', 'o_cother')}`,
+    () => `<div class="sec">支払者請求住所</div><div>${P.name}<br>${P.addr.join('<br>')}</div>
+      <div class="sec">支払情報</div><div>${P.card}<br>有効期限 ${P.exp}</div>
+      <div class="sec">拠出金額</div><div>${camtText()}</div>
+      <div class="small" style="margin-top:10px" id="agree">${AGREE}</div>`,
+    () => `<div class="okmsg" id="done">トランザクションは成功しました。</div><div class="small">${camtText()}</div>
+      ${nextWhat(['その他の支払', 'ビリングサマリーへ移動。'])}`,
+  ],
+};
+function camtText() { return S.sel.camt === 'months' ? '0年1ヶ月分の拠出金$200.00及び手数料$0.00の合計額$200.00' : `未払拠出金額${usd(P.unpaid)} 及び手数料$0.00 プラン 基本プラン の合計額${usd(P.unpaid)}`; }
+
+// D 解約の確認（会社側で作られた解約申込みを、お客様が確認して署名する）
+const REASONS = ['私/私たちは、私/私たちのプラン/ポリシーの収益の解約を希望しているため。', '私/私たちは、個人的な経済理由により解約払戻金を必要とするため（例: 家族/緊急医療、雇用喪失、災害、等）。',
+  '私/私たちは、個人的な利用目的により解約払戻金を必要とするため（例: 旅行、教育費用、等）', '私/私たちは、資産購入を希望しているため（例: 家、自動車、船、等）。', '私/私たちは、他への投資を希望しているため。', 'その他（詳細をご記入下さい）'];
+function dPanel(title, body, btns) {
+  return `<div class="box" id="cur"><div class="panel-h"><span class="dot"></span>${title}<span class="pm">—</span></div><div class="box-b">${body}</div>
+    ${btns ? `<div class="step-f">${btns}</div>` : ''}</div>`;
+}
+const D = {
+  D2: () => dPanel('リクエストを選択する', `<div class="sec">解約の選択</div><div class="small">お続けになる選択肢をお選びください。</div>
+      ${opt('dreq', 'part', '承認待ちのUSD 1,500.00の「一部解約」が１件あります。', 'o_dpart')}`,
+    `<button class="btn teal" id="next" onclick="need('dreq','D3')">次へ</button>`),
+  D3: () => dPanel('情報確認', `${['解約の種類', '解約価値', '支払詳細', '通知'].map(t => `<div class="acc">${svg('search').replace('<svg', '<svg style="width:16px;height:16px;stroke:#888;fill:none"')} ${t}<span style="margin-left:auto">⌃</span></div>`).join('')}
+      <div class="warn" id="warn">▲ 会社が解約申込みの手続きを行うまで、プランの価値はポリシー利用規約により定められたとおり引き続き更新されます。署名のため本解約申込みが一旦参加者に送信されると、本解約申込みの修正は認められません。</div>`,
+    `<button class="btn red" id="decline" onclick="hint('「辞退」を押すと、この解約申込みはキャンセルになります（デモでは何も起きません）。')">辞退</button><button class="btn teal" id="next" onclick="go('D4')">次へ</button>`),
+  D4: () => dPanel('アンケート', `<div class="small" style="margin-bottom:6px">理由（必須）：適応するもの全てを選択下さい</div>
+      ${REASONS.map((r, i) => `<div class="opt ${S.sel['r' + i] ? 'on' : ''}" id="o_r${i}" onclick="S.sel['r${i}']=!S.sel['r${i}'];render()"><span class="ck"></span><div class="small" style="color:#444">${r}</div></div>`).join('')}`,
+    `<button class="btn red" id="decline">辞退</button><button class="btn teal" id="next" onclick="REASONS.some((r,i)=>S.sel['r'+i])?go('D5'):hint('理由を1つ以上選んでください。')">次へ</button>`),
+  D5: () => dPanel('確認と署名', `<div class="small">以下に表示されたフォームおよび書類の全てに、電子署名が必要です。電子署名を行う前に、全てのページをご確認ください。</div>
+      <div style="border:1px solid #ddd;height:120px;margin:10px 0;display:flex;align-items:center;justify-content:center;color:#999;background:#fafafa">解約申込書（PDF）の見本</div>
+      <div class="opt ${S.sel.sign ? 'on' : ''}" id="o_sign" onclick="S.sel.sign=!S.sel.sign;render()"><span class="ck"></span><div class="small" style="color:#444">このボックスにチェックを入れることにより、私は、以下のとおり宣言します: …ポリシーから上記の解約を申請します。…「承認と署名」ボタンをクリックすることにより、私は、本電子解約申込みの電子送付を実行および承諾します。</div></div>`,
+    `<button class="btn red" id="decline">辞退</button><button class="btn teal" id="next" ${S.sel.sign ? '' : 'disabled'} onclick="go('D6')">承認と署名</button>`),
+  D6: () => dPanel('電話番号の確認', `<div class="note">デモなので入力はできません。本物では、ご登録の電話番号を入れます。</div>
+      <div class="fld"><label>国コード</label><input class="inp" value="+81 - Japan" readonly></div>
+      <div class="row2"><div class="fld" style="flex:1" id="f_area"><label>市外局番</label><input class="inp" value="（見本）" readonly></div><div class="fld" style="flex:2" id="f_local"><label>市内番号</label><input class="inp" value="（見本）" readonly></div></div>
+      <div class="small">ご入力いただく電話/携帯電話番号は、イントロデューサーがお申込みに入力したいずれかの電話番号と合致する必要があります。<b>5回を超えて間違えると、この申込みは使えなくなります。</b></div>`,
+    `<button class="btn gray">キャンセル</button><button class="btn" id="next" onclick="go('D7')">Ok</button>`),
+  D7: () => dPanel('確認コードの配信方法の選択', `${opt('dsend', 'sms', '<b>ショートメッセージ(SMS)</b><div class="small">携帯電話でSMSを受け取ります。届かないときは迷惑メッセージのフォルダも確認してください。</div>', 'o_sms')}
+      ${opt('dsend', 'voice', '<b>音声メッセージ</b><div class="small">自動音声の電話でコードをお知らせします。</div>', 'o_voice')}
+      ${opt('dsend', 'call', '<b>会社へ電話を架ける</b><div class="small">表示される番号へご自身から電話します。</div>', 'o_call')}`,
+    `<button class="btn gray">キャンセル</button><button class="btn" id="next" onclick="need('dsend','D8')">Ok</button>`),
+  D8: () => dPanel('確認コードを入力してください', `<div class="note">6桁のアクセスコードが送信されました。</div>
+      <div class="small">各欄へ別々に、アクセスコードの６つの番号を、それぞれご入力ください。（デモでは何を入れても進めます）</div>
+      <div class="code6" id="code6">${[1, 2, 3, 4, 5, 6].map(n => `<input inputmode="numeric" maxlength="1" value="${SH ? n : ''}">`).join('')}</div>`,
+    `<button class="btn gray" onclick="go('D7')">戻る</button><button class="btn" id="next" onclick="go('D9')">次へ</button>`),
+  D9: () => dPanel('結果', `<div class="okmsg" id="done">申請は署名されました</div>
+      <div class="small">あなたは本解約申込みに電子署名を行いました。全ての参加者が申請へ署名した後、会社は申請手続きを開始します。ご自身の記録のため、以下のボタンをクリックし、本申請の写しをダウンロードしてください。</div>
+      <div style="margin-top:12px"><button class="btn" id="dl" onclick="hint('デモではダウンロードはありません。本物では解約申込書のPDFの写しが保存できます。')">ダウンロード</button></div>`),
+};
+function need(k, r) { if (!S.sel[k]) return hint('選んでから進んでください。'); go(r); }
+
+// ---------- 画面ごとの描き分け ----------
+function render() {
+  // #A2~method=check のように ~ のあとに選んだ状態を付けられる（撮影用）
+  const [r0, ...given] = decodeURIComponent(location.hash.slice(1)).split('~');
+  const r = r0 || 'home';
+  given.forEach(kv => { const [k, v] = kv.split('='); S.sel[k] = v === undefined ? true : v; });
+  const app = $('#app');
+  hideHint();
+  S.surrender = /^D/.test(r) || r === 'dmenu';
+  if (r === 'home') { S.menu = false; app.innerHTML = home(); return; }
+  if (r === 'login') { app.innerHTML = loginPage(); return; }
+  if (r === 'dash') { S.menu = false; app.innerHTML = dash(); return; }
+  if (r === 'menu') { S.menu = true; menuOpenKey = 'bill'; app.innerHTML = overview(); return; }
+  if (r === 'dmenu') { S.menu = true; menuOpenKey = 'gen'; app.innerHTML = overview(); return; }
+  if (r === 'overview') { app.innerHTML = overview(); return; }
+  if (r === 'billsum') { S.menu = false; app.innerHTML = billsum(); return; }
+  if (r === 'Amail') { app.innerHTML = mailPage('A'); return; }
+  if (r === 'Dmail') { app.innerHTML = mailPage('D'); return; }
+  const m = r.match(/^([ABC])(\d)$/);
+  if (m) {
+    S.menu = false; preselect(r);
+    const cfg = { A, B, C }[m[1]];
+    const t = { A: ['請求通知', '請求通知', 'このオプションは、請求通知がどのように処理されるかユーザーによって選ぶことを可能にします。', 'notice'],
+      B: ['自動支払い', '自動支払い', 'このオプションでは、ユーザーがクレジットカードまたはアメリカの口座からの引き落としによる定期的支払を選択することを可能にします。こちらのオプションから、未払い分のお支払い及び今後のお支払い両方の設定をしていただけます。', 'auto'],
+      C: ['オンライン決済', 'オンライン決済', '', 'online'] }[m[1]];
+    app.innerHTML = page(t[0], ['アカウントアクセス', 'ポリシー', '請求', t[1]], (t[2] ? `<div class="note">${t[2]}</div>` : '') + wizard(cfg, +m[2]), 'bill', t[3]);
+    if (!SH) setTimeout(() => $('#cur')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 30);
+    return;
+  }
+  if (D[r]) {
+    S.menu = false; preselect(r);
+    app.innerHTML = page('解約の確認', ['アカウントアクセス', 'ポリシー', '解約の確認'], D[r](), 'gen', '');
+    return;
+  }
+  app.innerHTML = home();
+}
+// 撮影や途中からの練習のため、その画面より前の選択を埋めておく
+function preselect(r) {
+  const fill = { A2: { payer: 'self' }, A3: { method: 'check' }, A4: { ntype: 'mail' }, A5: { afreq: 'q' },
+    B2: { payer: 'self' }, B3: { ctype: 'visa' }, B5: { bfreq: 'm' }, B6: { period: 'future' },
+    C2: { payer: 'self' }, C3: { ctype: 'visa' }, C5: { camt: 'unpaid' },
+    D3: { dreq: 'part' }, D5: { r1: true }, D6: { sign: true }, D8: { dsend: 'sms' } };
+  const [k, n] = [r[0], +r.slice(1)];
+  for (let i = 2; i <= n; i++) Object.entries(fill[k + i] || {}).forEach(([a, b]) => { if (S.sel[a] === undefined) S.sel[a] = b; });
+}
+
+function home() {
+  return `<div class="home"><h1 style="margin-bottom:6px">積立プランの操作を練習する</h1>
+  <p class="small">本物のマイページとよく似た画面で、手続きの流れを練習できます。お客様と一緒に、同じ順番で押してみてください。<br>※本物のサイトではありません。入力した内容はどこにも送られません。</p>
+  <a class="card" href="#A1" onclick="S.sel={}"><span class="tag">請求 › 請求通知</span><br><b>① カードの自動引き落としをやめる（一時停止）</b><p>支払い方法をチェック（小切手）などに変えて、自動で引き落とされないようにします。初期口座の期間が終わってから。</p></a>
+  <a class="card" href="#B1" onclick="S.sel={}"><span class="tag">請求 › 自動支払い</span><br><b>② カードの変更・支払い頻度の変更・再開</b><p>新しいカードを登録する、月払い↔年払いを変える、止めていた引き落としを再開する。</p></a>
+  <a class="card" href="#C1" onclick="S.sel={}"><span class="tag">請求 › オンライン決済</span><br><b>③ 引き落とされなかった分を払う（滞納時）</b><p>カードが通らなかった分などを、その場でカード払いします。</p></a>
+  <a class="card" href="#Dmail" onclick="S.sel={}"><span class="tag">解約の確認</span><br><b>④ 一部解約・解約の申込みを確認して署名する</b><p>担当から作られた解約申込みを、メールが届いてから72時間以内に確認して署名します。</p></a>
+  <p class="small" style="margin-top:18px">ログイン画面から練習する： <a href="#login">ログイン画面を開く</a></p></div>`;
+}
+function loginPage() {
+  return `<div class="top"><div class="brand">マイページ<small>（練習用デモ）</small></div></div>
+  <div class="login"><h2>ようこそ</h2>
+  <input class="inp" placeholder="ユーザーID（デモでは入力不要）" disabled>
+  <input class="inp" placeholder="パスワード（デモでは入力不要）" disabled>
+  <button class="btn green" id="loginBtn" onclick="go('dash')">ログイン</button>
+  <div style="margin:8px 0 18px"><a class="small">ユーザーID/パスワードをお忘れですか?</a></div>
+  <button class="btn navy">アカウントの登録</button>
+  <p class="small" style="margin-top:14px">本物では、ITAから届いたユーザーIDとパスワードでログインします。</p></div>`;
+}
+function dash() {
+  return topBar(false) + `<main class="main" style="max-width:560px;margin:0 auto">
+    <h1>アカウントアクセス</h1><div class="sub">私のダッシュボード</div><div class="crumb">🏠 アカウントアクセス</div>
+    <div class="box"><div class="box-b"><div style="color:var(--teal);font-size:16px;margin-bottom:10px">ⓘ プラン照会</div>
+    <div style="border-top:1px solid #ddd;padding-top:10px">${P.plan}<div class="small">My Investment Plan</div>
+    <a href="#overview" id="toMain">メインページへ進んでください ›</a></div></div></div></main>`;
+}
+function overview() {
+  return page('プランの概要', ['アカウントアクセス', 'ポリシー', '一般', '概要'],
+    `<div class="box"><div class="box-h">ⓘ 全般</div><div class="box-b"><dl class="kv">
+      <div><dt>状態</dt><dd>有効</dd></div><div><dt>通貨</dt><dd>米ドル</dd></div>
+      <div><dt>発効日</dt><dd>${P.eff}</dd></div><div><dt>年間拠出金</dt><dd>$2,400.00</dd></div>
+      <div><dt>一括払い</dt><dd>$0.00</dd></div><div><dt>最終の支払済日</dt><dd>${P.due}</dd></div></dl></div></div>
+    ${S.menu ? '' : '<p class="small">右上の「≡」を押すと、メニューが開きます。</p>'}`, menuOpenKey, 'ov');
+}
+function billsum() {
+  return page('請求概要', ['アカウントアクセス', 'ポリシー', '請求', '概要'],
+    `<div class="box"><div class="box-h">ⓘ 全般</div><div class="box-b"><dl class="kv">
+      <div><dt>発効日</dt><dd>${P.eff}</dd></div><div><dt>期限</dt><dd>${P.due}</dd></div>
+      <div><dt>毎月 拠出金</dt><dd>$200.00</dd></div><div><dt>年間拠出金</dt><dd>$2,400.00</dd></div>
+      <div><dt>定期拠出金・前納支払最大可能額</dt><dd>（画面に表示）</dd></div><div><dt>一括払い</dt><dd>$0.00</dd></div></dl></div></div>
+    <div class="box"><div class="box-h">ⓘ クレジットカード 情報</div><div class="box-b"><dl class="kv"><div><dt>カード</dt><dd>${P.card}</dd></div><div><dt>有効期限</dt><dd>${P.exp}</dd></div></dl></div></div>
+    <p class="small">メニューの「請求」から手続きを選べます。<a href="#home">練習メニューに戻る</a></p>`, 'bill', 'bsum');
+}
+function mailPage(kind) {
+  const body = kind === 'A'
+    ? `<p>${P.name} 様</p><p>A new secure message related to your plan.<br>（プランに関する新しいお知らせがあります）</p>
+       <p>To review the message, please log on to our secure account website and navigate to the Document Center.<br>（マイページにログインして、ドキュメントセンターで確認してください）</p>
+       <div style="border:1px solid #ddd;padding:10px;margin:12px 0;font-size:12px"><b>拠出金支払通知</b>（見本）<br>支払い頻度：3ヵ月毎　拠出金額：$600.00<br>支払い期日：15/11/2026</div>
+       <p class="small">このような支払通知のメールが届けば、自動引き落としから「自分で支払う形」への切り替えができています。</p>`
+    : `<p>参加者様</p><p>ポリシー番号: ${P.plan}</p><p>新規解約申込みがございます。こちらの <a href="#D2" id="mailLink">リンク</a> をクリックいただき、申請をご確認の上、電子署名をお願いいたします。申請をご確認いただかない場合、申請へのアクセスは<b>72時間</b>で有効期限切れとなります。</p>
+       <p class="small">マイページにログインすると、メニューのいちばん上に「解約の確認」も出ています。</p>`;
+  return `<div class="top"><div class="brand">メール（見本）<small>（練習用デモ）</small></div></div>
+  <div style="padding:16px"><div class="mail" id="mailbox"><div class="mail-top"><span class="av">I</span><div><b>${kind === 'A' ? '支払通知のお知らせ' : '解約申込みのお知らせ'}</b><div class="small">To: 自分</div></div></div>
+  <div class="mail-b"><div class="bar"></div>${body}</div></div>
+  <p class="small" style="text-align:center;margin-top:14px">${kind === 'A' ? '<a href="#home">練習メニューに戻る</a>' : '<a href="#D2">リンクを押したことにして進む ›</a>'}</p></div>`;
+}
+
+let hintT;
+function hint(t) { const h = $('#hint'); h.textContent = t; h.classList.add('show'); clearTimeout(hintT); hintT = setTimeout(hideHint, 3500); }
+function hideHint() { $('#hint')?.classList.remove('show'); }
+render();
+</script>
+</body>
+</html>
